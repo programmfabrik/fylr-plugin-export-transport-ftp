@@ -1,0 +1,98 @@
+#!/bin/python
+
+
+import sys
+import json
+from shared import util
+import fylr_lib_plugin_python3.util as fylr_util
+
+
+def rclone_sync_to_ftp(
+    opts: util.PluginInfoJson,
+) -> tuple[int, list[str], list[str]]:
+
+    http_url = opts.format_export_http_url()
+
+    ftp_url = f':{opts.rclone_ftp_method}:{opts.target_dir}/{opts.export_name}'
+
+    parameter_map = opts.ftp_params.copy()
+    parameter_map['http-url'] = http_url
+
+    parameters = [
+        'sync',
+        ':http:',
+        ftp_url,
+    ] + util.add_rclone_parameters(
+        parameter_map,
+        opts.additional_parameters,
+    )
+
+    return util.run_rclone_command(
+        parameters, util.rclone_log_level(opts.rclone_log_debug)
+    )
+
+
+def rclone_copyurl_to_ftp(
+    opts: util.PluginInfoJson,
+) -> tuple[int, list[str], list[str]]:
+
+    http_url = opts.format_export_http_url()
+
+    ftp_url = f':{opts.rclone_ftp_method}:{opts.target_dir}/{opts.export_name}.{opts.transport_packer}'
+
+    parameters = [
+        'copyurl',
+        http_url,
+        ftp_url,
+    ] + util.add_rclone_parameters(
+        opts.ftp_params,
+        opts.additional_parameters,
+    )
+
+    return util.run_rclone_command(
+        parameters,
+        util.rclone_log_level(opts.rclone_log_debug),
+    )
+
+
+if __name__ == '__main__':
+
+    try:
+
+        # read export data from stdin
+        stdin_json = util.read_json_from_stdin()
+
+        # read %info.json% (needs to be given as the first argument)
+        info_json = json.loads(sys.argv[1])
+
+        parsed_opts = util.PluginInfoJson('ftp', info_json, stdin_json)
+        export_response = parsed_opts.export
+
+        # depending on the packer, decide which rclone method to use
+        if not parsed_opts.transport_packer or parsed_opts.transport_packer == 'folder':
+            # sync all exported files and folders from the export with the ftp target directory
+            exit_code, rclone_stdout, rclone_stderr = rclone_sync_to_ftp(parsed_opts)
+
+        elif parsed_opts.transport_packer in ['zip', 'tar.gz']:
+            # copy the exported archive files from the export to the ftp target directory
+            exit_code, rclone_stdout, rclone_stderr = rclone_copyurl_to_ftp(parsed_opts)
+
+        else:
+            raise Exception(f'unknown packer {parsed_opts.transport_packer}')
+
+        util.return_json_body(
+            util.format_export_response(
+                export_response,
+                exit_code,
+                rclone_stdout,
+                rclone_stderr,
+            )
+        )
+
+    except Exception as e:
+        util.return_json_body(
+            {
+                '_state': 'failed',
+                '_transport_log': fylr_util.get_exception_traceback(e),
+            }
+        )

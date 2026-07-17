@@ -1,0 +1,56 @@
+plugin:
+  # the plugin name is kept from the ez5 era on purpose: saved export
+  # transport configurations and the fylr apitests reference it
+  name: easydb-export-transport-ftp-plugin
+  version: 1.0
+  url: https://github.com/programmfabrik/fylr-plugin-export-transport-ftp
+  webfrontend:
+    url: easydb-export-transport-ftp.js
+  l10n: l10n/easydb-export-transport-ftp.csv
+
+base_url_prefix: webfrontend
+
+base_config:
+  - name: rclone
+    group: export
+    parameters:
+      rclone_log_debug:
+        type: bool
+        default: false
+        position: 0
+
+callbacks:
+
+  export_transport:
+
+    transport_ftp:
+      exec:
+        timeoutSec: 3600
+        service: python3
+        commands:
+          - prog: python3
+            stdin:
+              type: body
+            stdout:
+              type: body
+            args:
+              - type: value
+                value: "%_exec.pluginDir%/server/fylr-export-transport-ftp.py"
+              - type: value
+                value: "%info.json%"
+
+    transport_webdav:
+      exec:
+        timeoutSec: 3600
+        service: python3
+        commands:
+          - prog: python3
+            stdin:
+              type: body
+            stdout:
+              type: body
+            args:
+              - type: value
+                value: "%_exec.pluginDir%/server/fylr-export-transport-webdav.py"
+              - type: value
+                value: "%info.json%"

@@ -1,0 +1,22 @@
+# Build configuration for fylr-build-plugin — the explicit build description.
+# All features: https://github.com/programmfabrik/fylr-build-plugin
+
+server:
+  # python callbacks incl. the shared helpers and the fylr-lib-plugin-python3
+  # submodule (its .git pointer never ships), plus the fylr loca CSV
+  install:
+    - server
+    - l10n
+
+webfrontend:
+  # CoffeeScript 1.x, compiled + concatenated in this order into
+  # plugin.webfrontend.url (webfrontend/easydb-export-transport-ftp.js)
+  coffee1:
+    - webfrontend/ExportTransportFTP.coffee
+    - webfrontend/ExportTransportWebDAV.coffee
+
+loca:
+  # mastered in the custom-data-types Google Sheet (shared with the ez5 plugin)
+  - csv: l10n/easydb-export-transport-ftp.csv
+    sheet: 1Z3UPJ6XqLBp-P8SUf-ewq4osNJ3iZWKJB83tc6Wrfn0
+    gid: "1868686590"
