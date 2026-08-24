@@ -9,11 +9,13 @@ server:
     - l10n
 
 webfrontend:
-  # CoffeeScript 1.x, compiled + concatenated in this order into
-  # plugin.webfrontend.url (webfrontend/easydb-export-transport-ftp.js)
-  coffee1:
-    - webfrontend/ExportTransportFTP.coffee
-    - webfrontend/ExportTransportWebDAV.coffee
+  # assembled into plugin.webfrontend.url, in this order:
+  # .coffee is compiled (CoffeeScript 1.x), .scss compiled,
+  # anything else taken verbatim
+  bundles:
+    - sources:
+        - webfrontend/ExportTransportFTP.coffee
+        - webfrontend/ExportTransportWebDAV.coffee
 
 loca:
   # mastered in the custom-data-types Google Sheet (shared with the ez5 plugin)
