@@ -4,6 +4,9 @@ plugin:
   name: easydb-export-transport-ftp-plugin
   version: 1.0
   url: https://github.com/programmfabrik/fylr-plugin-export-transport-ftp
+  displayname:
+    en-US: "FTP Export Transport Plugin"
+    de-DE: "FTP-Export-Transport-Plugin"
   webfrontend:
     url: easydb-export-transport-ftp.js
   l10n: l10n/easydb-export-transport-ftp.csv
